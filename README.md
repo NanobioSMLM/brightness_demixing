@@ -1,0 +1,1 @@
+The merging algorithm works with tables containing localizations in a .csv file. This file must include the frame number where the localization appears, the position (x, y, and optionally z), and its intensity (number of photons).
