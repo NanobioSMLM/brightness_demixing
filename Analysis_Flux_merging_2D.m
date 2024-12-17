@@ -14,16 +14,16 @@ Radius = 100;    %Radius in nm to determine if two detections in consecutive fra
 Data = table2array(readtable(sprintf('%s.csv',DataInit), 'HeaderLines',1));
 
 % Be careful: "frame" shoud corrrepond to the colum where the frame index on which the localization appear, "x" and "y" to the lateral coordinates, 
-%"width" to the sigma of the fitted gaussian, "I" to the intensity (number of photons), "precision" to the uncertainty calculated with Cramer-Rao lower bound
-frame=Data(:,2); x=Data(:,3); y=Data(:,4); width=Data(:,5); I=Data(:,6); ratio=Data(:,6); 
+% "I" to the intensity (number of photons)
+frame=Data(:,2); x=Data(:,3); y=Data(:,4); I=Data(:,6); 
 
 clear Data;
 %% Plot of the intensity histogram
 figure;
-Hist_ratio=histogram(I,350,'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.5 0.5 0.5]);
-Occu_ratio=Hist_ratio.Values;
+Histo=histogram(I,350,'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.5 0.5 0.5]);
+Occu=Histo.Values;
 set(gca,'FontSize',18);
-axis([0 0.5*max(I) 0 1.05*max(Occu_ratio)])  
+axis([0 0.5*max(I) 0 1.05*max(Occu)])  
 xlabel('Intensity (photon)');
 ylabel('Frequency');
 axis square;
@@ -41,24 +41,9 @@ molec_x=zeros(N_det,1);
 molec_y=zeros(N_det,1);
 molec_frame_On=zeros(N_det,1);      %Frame at which the molecule turn ON
 molec_flux=zeros(N_det,1);
-molec_ratio=zeros(N_det,1);         %Average spectral ratio of the molecule INCLUDING the first and last transiant frames
 molec_flux_first=zeros(N_det,1);    %Flux measured on the transiant first frame when the molecule turn on
 molec_flux_last=zeros(N_det,1);     %Flux measured on the transiant last frame when the molecule turn off
 molec_flux_small=zeros(N_det,1);    %Average flux calculated on the frames EXCLUDING the first and last transiant (only non zero for Nb_frame=3)
-molec_flux_flat=zeros(N_det,1);     %Average flux calculated on the frames INCLUDING the first and last transiant with normalization by the total flux in the frame
-molec_I2=zeros(N_det,1);            %intermediate I^2 used to calculate the standard deviation of the flux of a molecule
-molec_std_dev=zeros(N_det,1);   
-molec_I2_flat=zeros(N_det,1);       %intermediate I^2 used to calculate the standard deviation of the flat flux of a molecule
-molec_I2_first=zeros(N_det,1);
-molec_I2_last=zeros(N_det,1);
-molec_std_dev_flat=zeros(N_det,1);
-molec_ratio2=zeros(N_det,1);        %intermediate ratio^2 used to calculate the standard deviation of the spectral ratio of a molecule
-molec_std_dev_ratio=zeros(N_det,1);
-molec_std_dev_small=zeros(N_det,1); % Standerd deviation for flux without first and last frame
-molec_width=zeros(N_det,1);         %Average width of the PSF of a molecule INCLUDING the first and last transiant frames
-molec_ratio_max=zeros(N_det,1);     %Spectral ratio in the frame with max flux of the molecule INCLUDING the first and last transiant frames
-molec_width_max=zeros(N_det,1);     %Width of the PSF in the frame with max flux  INCLUDING the first and last transiant frames
-molec_flux_max=zeros(N_det,1);      %Max flux of the molecule INCLUDING the first and last transiant frames
 
 %Making of the new molecule array
 %Initilization of the first frame
@@ -74,18 +59,9 @@ molec_frame_On(idx_det_ref)=cpt_frame;          %frame at which the molec turned
 molec_On(idx_det_ref)=1;                        %Nber of frames the molec is ON
 molec_x(idx_det_ref)=x(idx_det_ref);            %pos x
 molec_y(idx_det_ref)=y(idx_det_ref);            %pos y
-molec_ratio(idx_det_ref)=ratio(idx_det_ref);
 molec_flux(idx_det_ref)=I(idx_det_ref);         %intensity
-molec_ratio_max(idx_det_ref)=I(idx_det_ref);    %spectral ratio at max intensity
-molec_width_max(idx_det_ref)=width(idx_det_ref);   %width at max intensity
 molec_flux_max(idx_det_ref)=I(idx_det_ref);
 molec_flux_first(idx_det_ref)=I(idx_det_ref);
-molec_I2(idx_det_ref)=I(idx_det_ref).^2;        %intensity^2 for the culculation of the std dev
-molec_I2_first(idx_det_ref)=I(idx_det_ref).^2;  
-molec_width(idx_det_ref)=width(idx_det_ref);    %width of the PSF
-molec_flux_flat(idx_det_ref)=I(idx_det_ref)./frame_flux_mean(cpt_frame);         %intensity
-molec_I2_flat(idx_det_ref)=(I(idx_det_ref)./frame_flux_mean(cpt_frame)).^2;        %intensity^2 for the calculation of the std dev
-molec_ratio2(idx_det_ref)=ratio(idx_det_ref).^2;        %intensity^2 for the culculation of the std dev
 
 ones_det_ref=ones(size(idx_det_ref));
 N_molec=max(molec);  %Nber of detected molecules
@@ -121,38 +97,17 @@ while idx_det_init<=N_det, %N_det=length(x), idx_det_init est la liste des indic
     molec_flux(idx_new_molec)=I(idx_det_new_molec);
     molec_flux_first(idx_new_molec)=I(idx_det_new_molec);
     molec_I2_first(idx_new_molec)=I(idx_det_new_molec).^2;
-    molec_flux_flat(idx_new_molec)=I(idx_det_new_molec)/frame_flux_mean(cpt_frame);        
-    molec_I2(idx_new_molec)=I(idx_det_new_molec).^2;
-    molec_I2_flat(idx_new_molec)=(I(idx_det_new_molec)./frame_flux_mean(cpt_frame)).^2; 
-    molec_width(idx_new_molec)=width(idx_det_new_molec);
-    molec_ratio(idx_new_molec)=ratio(idx_det_new_molec);
-    molec_ratio2(idx_new_molec)=ratio(idx_det_new_molec).^2;
-    molec_ratio_max(idx_new_molec)=I(idx_det_new_molec);    
-    molec_width_max(idx_new_molec)=width(idx_det_new_molec);   
-    molec_flux_max(idx_new_molec)=I(idx_det_new_molec);
     
     %Second molecules already detected in the previous frame
     idx_old_molec=molec(idx_det_ref(idx_nbor(dist2_nbor<Radius^2)));    %idx of the molec found in the previous frame 
     idx_det_old_molec=idx_det(dist2_nbor<Radius^2);                     %idx of the detections in the new frame that are associated to the molec detected previously 
     molec(idx_det_old_molec)=idx_old_molec;                             %idx of the old molecule for the detection data
     molec_On(idx_old_molec)=molec_On(idx_old_molec)+1;                  %adding one to the nber of ON frames
-    molec_ratio(idx_old_molec)=molec_ratio(idx_old_molec)+ratio(idx_det_old_molec);
     molec_x(idx_old_molec)=molec_x(idx_old_molec)+x(idx_det_old_molec);             %Adding the new coord x (to get the average after)
     molec_y(idx_old_molec)=molec_y(idx_old_molec)+y(idx_det_old_molec);             %Adding the new coord y (to get the average after)
     molec_flux(idx_old_molec)=molec_flux(idx_old_molec)+I(idx_det_old_molec);       %Adding the new I (to get the average after)
-    molec_flux_flat(idx_old_molec)=molec_flux_flat(idx_old_molec)+I(idx_det_old_molec)/frame_flux_mean(cpt_frame);        
-    molec_I2(idx_old_molec)=molec_I2(idx_old_molec)+I(idx_det_old_molec).^2;        %Adding the new I^2 (to get the average after)
-    molec_I2_flat(idx_old_molec)=molec_I2_flat(idx_old_molec)+(I(idx_det_old_molec)./frame_flux_mean(cpt_frame)).^2;        %intensity^2 for the culculation of the std dev
-    molec_width(idx_old_molec)=molec_width(idx_old_molec)+width(idx_det_old_molec); %Adding the new PSF width (to get the average after)
     molec_flux_last(idx_old_molec)=I(idx_det_old_molec);
-    molec_I2_last(idx_old_molec)=I(idx_det_old_molec).^2;
-    molec_ratio2(idx_old_molec)=molec_ratio2(idx_old_molec)+ratio(idx_det_old_molec).^2;        %Adding the new I^2 (to get the average after)
-    if (molec_flux_max(idx_old_molec)<I(idx_det_old_molec)),
-        molec_flux_max(idx_old_molec)=I(idx_det_old_molec);
-        molec_width_max(idx_old_molec)=width(idx_det_old_molec);
-        molec_ratio_max(idx_old_molec)=ratio(idx_det_old_molec);
-    end;
-    
+
     %new frame -> ref frame
     idx_det_ref=idx_det;
     idx_det_init=max(idx_det_ref)+1;
@@ -163,21 +118,10 @@ while idx_det_init<=N_det, %N_det=length(x), idx_det_init est la liste des indic
 end;
 %%
 %Calculation of the averages
-molec_x(1:N_molec)=molec_x(1:N_molec)./molec_On(1:N_molec); %molec_On(1:N_molec) est le tableau avec pour chaque molécule le nombre de frame sur lequel c'est ON
+molec_x(1:N_molec)=molec_x(1:N_molec)./molec_On(1:N_molec); % molec_On(1:N_molec) is the table with the frame on which it appears for each molecule
 molec_y(1:N_molec)=molec_y(1:N_molec)./molec_On(1:N_molec);
 molec_flux_small(molec_On>2)=(molec_flux(molec_On>2)-molec_flux_first(molec_On>2)-molec_flux_last(molec_On>2))./(molec_On(molec_On>2)-2);
 molec_flux(1:N_molec)=molec_flux(1:N_molec)./molec_On(1:N_molec);
-molec_flux_flat(1:N_molec)=molec_flux_flat(1:N_molec)./molec_On(1:N_molec);
-molec_std_dev(1:N_molec)=(molec_I2(1:N_molec)./molec_On(1:N_molec)-molec_flux(1:N_molec).^2).^0.5;
-molec_I2_first(1:N_molec)=molec_flux_first(1:N_molec).^2;
-molec_I2_last(1:N_molec)=molec_flux_last(1:N_molec).^2;
-molec_I2_small=zeros(N_det,1);
-molec_I2_small(molec_On>2)=molec_I2(molec_On>2)-molec_I2_first(molec_On>2)-molec_I2_last(molec_On>2);
-molec_std_dev_small(molec_On>2)=(molec_I2_small(molec_On>2)./(molec_On(molec_On>2)-2)-molec_flux_small(molec_On>2).^2).^0.5;
-molec_std_dev_flat(1:N_molec)=(molec_I2_flat(1:N_molec)./molec_On(1:N_molec)-molec_flux_flat(1:N_molec).^2).^0.5;
-molec_width(1:N_molec)=molec_width(1:N_molec)./molec_On(1:N_molec);
-molec_ratio(1:N_molec)=molec_ratio(1:N_molec)./molec_On(1:N_molec);
-molec_std_dev_ratio(1:N_molec)=(molec_ratio2(1:N_molec)./molec_On(1:N_molec)-molec_ratio(1:N_molec).^2).^0.5;
 
 %% Preparation for saving (if Nb_frame=1 all the molecule are saved) 
 mol_On=molec_On(molec_On>=Nb_frame);
@@ -185,14 +129,6 @@ mol_x=molec_x(molec_On>=Nb_frame);
 mol_y=molec_y(molec_On>=Nb_frame);
 mol_flux=molec_flux(molec_On>=Nb_frame);
 mol_flux_small=molec_flux_small(molec_On>=Nb_frame);
-mol_std_dev_small=real(molec_std_dev_small(molec_On>=Nb_frame));
-mol_std_dev=molec_std_dev(molec_On>=Nb_frame);
-mol_width=molec_width(molec_On>=Nb_frame);
-mol_ratio=molec_ratio(molec_On>=Nb_frame);
-mol_std_dev_ratio=molec_std_dev_ratio(molec_On>=Nb_frame);
-mol_flux_max=molec_flux_max(molec_On>=Nb_frame);
-mol_width_max=molec_width_max(molec_On>=Nb_frame);
-mol_ratio_max=molec_ratio_max(molec_On>=Nb_frame);
 
 %% Calcul taux de rejection
 s = 0; % Compte le nombre de localisation qui aparaissent sur 3 frames min
@@ -205,7 +141,7 @@ rejection_rate =100- 100*s/length(x) %taux de rejection
 
 %% Data saving with same name as initial data file and .mat extension
 NameSaveData = sprintf('%s.mat',DataInit);
-save(NameSaveData,'mol_x','mol_y','mol_flux','mol_std_dev','mol_flux_small','mol_width','mol_ratio','mol_std_dev_ratio','mol_flux_max','mol_width_max','mol_ratio_max','mol_On','rejection_rate','mol_std_dev_small','molec');
+save(NameSaveData,'mol_x','mol_y','mol_flux','mol_flux_small','mol_On','rejection_rate','molec');
 %% Histo Flux
 figure;  
 xlabel('Flux (photon)');
