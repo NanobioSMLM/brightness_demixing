@@ -20,20 +20,7 @@ frame=Data(:,2); x=Data(:,12); y=Data(:,13); z=Data(:,5); I=Data(:,15); % DONALD
 %frame=Data(:,2); x=Data(:,3); y=Data(:,4); z=Data(:,5); %I=Data(:,7); % Astigmatism
 
 clear Data;
-%% Plot of the intensity histogram
-figure;
-Histo=histogram(I,350,'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.5 0.5 0.5]);
-Occu=Histo.Values;
-set(gca,'FontSize',18);
-axis([0 0.5*max(I) 0 1.05*max(Occu)])  
-xlabel('Intensity (photon)');
-ylabel('Frequency');
-axis square;
-hold on; 
-%% Saving intensity histogram
-saveas(gcf,[DataInit,'_Histo_Intensity.pdf']);
-saveas(gcf,[DataInit,'_Histo_Intensity.png']);
-saveas(gcf,[DataInit,'_Histo_Intensity.fig']);
+
 %%
 %Data initialization
 N_det=length(x);
