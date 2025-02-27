@@ -18,20 +18,7 @@ Data = table2array(readtable(sprintf('%s.csv',DataInit), 'HeaderLines',1));
 frame=Data(:,2); x=Data(:,3); y=Data(:,4); I=Data(:,6); 
 
 clear Data;
-%% Plot of the intensity histogram
-figure;
-Histo=histogram(I,350,'FaceColor',[0.5 0.5 0.5],'EdgeColor',[0.5 0.5 0.5]);
-Occu=Histo.Values;
-set(gca,'FontSize',18);
-axis([0 0.5*max(I) 0 1.05*max(Occu)])  
-xlabel('Intensity (photon)');
-ylabel('Frequency');
-axis square;
-hold on; 
-%% Saving intensity histogram
-saveas(gcf,[DataInit,'_Histo_Intensity.pdf']);
-saveas(gcf,[DataInit,'_Histo_Intensity.png']);
-saveas(gcf,[DataInit,'_Histo_Intensity.fig']);
+
 %%
 %Data initialization
 N_det=length(x);
