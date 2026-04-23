@@ -34,7 +34,7 @@ molec_flux_small=zeros(N_det,1);    %Average flux calculated on the frames EXCLU
 %Initilization of the first frame
 cpt_frame=1;
 
-idx_det_ref=find(frame==frame(1));              %idx des detection du 1er frame
+idx_det_ref=find(frame==frame(1));              %idx of 1st frame detection
 frame_cor(idx_det_ref)=cpt_frame;               %adding a reindexing frame colomn to the data  
 frame_nb_det(cpt_frame)=sum(idx_det_ref>0); %nber of detected molec in the frame
 frame_flux_mean(cpt_frame)=mean(I(idx_det_ref));
@@ -54,7 +54,7 @@ idx_det_init=max(idx_det_ref)+1; %next detection idx to process
 
 %%
 %Cycle the det by frames until finished
-while idx_det_init<=N_det, %N_det=length(x), idx_det_init est la liste des indices des détections sur la 1e frame de l'acq
+while idx_det_init<=N_det, %N_det=length(x), idx_det_init is the index list of the detections that appear for the first time 
     cpt_frame=cpt_frame+1; %On avance d'une frame
     idx_det=find(frame==frame(idx_det_init)); %new set of idx associated to the new frame
     frame_cor(idx_det)=cpt_frame;             %Re-idxing the frame 
@@ -108,26 +108,30 @@ molec_y(1:N_molec)=molec_y(1:N_molec)./molec_On(1:N_molec);
 molec_flux_small(molec_On>2)=(molec_flux(molec_On>2)-molec_flux_first(molec_On>2)-molec_flux_last(molec_On>2))./(molec_On(molec_On>2)-2);
 molec_flux(1:N_molec)=molec_flux(1:N_molec)./molec_On(1:N_molec);
 
-%% Preparation for saving (if Nb_frame=1 all the molecule are saved) 
+%% 
+% Preparation for saving (if Nb_frame=1 all the molecule are saved) 
 mol_On=molec_On(molec_On>=Nb_frame);
 mol_x=molec_x(molec_On>=Nb_frame);
 mol_y=molec_y(molec_On>=Nb_frame);
 mol_flux=molec_flux(molec_On>=Nb_frame);
 mol_flux_small=molec_flux_small(molec_On>=Nb_frame);
 
-%% Calcul taux de rejection
-s = 0; % Compte le nombre de localisation qui aparaissent sur 3 frames min
+%% 
+% Calculation taux de rejection
+s = 0; % Number of localizations appearing on 3 frames at least
 for k = 1:length(mol_On);
     if mol_On(k) > 2; 
         s = s + mol_On(k);
     end
 end
-rejection_rate =100- 100*s/length(x) %taux de rejection
+rejection_rate =100- 100*s/length(x) % Rejection rate
 
-%% Data saving with same name as initial data file and .mat extension
+%% 
+% Data saving with same name as initial data file and .mat extension
 NameSaveData = sprintf('%s.mat',DataInit);
 save(NameSaveData,'mol_x','mol_y','mol_flux','mol_flux_small','mol_On','rejection_rate','molec');
-%% Histo Flux
+%% 
+% Histogram Flux
 figure;  
 xlabel('Flux (photon)');
 ylabel('Occurences');
@@ -135,7 +139,8 @@ axis square;
 hold on;
 set(gca,'FontSize',18);
 histogram(mol_flux_small(mol_flux_small>0),'Facecolor',[0.5 0.5 0.5],'EdgeColor',[0.5 0.5 0.5]);
-%% Sauvegarde Histo Flux
+%% 
+% Saving Histogram Flux
 saveas(gcf,[DataInit,'_Histo_Flux_Code Traitement.pdf']);
 saveas(gcf,[DataInit,'_Histo_Flux_Code Traitement.png']);
 saveas(gcf,[DataInit,'_Histo_Flux_Code Traitement.fig']);
