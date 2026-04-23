@@ -1,5 +1,3 @@
-%18/11/24
-
 %- The code saves a table with the extension .mat in the same directory that the "DataInit" file.
 clear all;
 close all;
