@@ -55,7 +55,7 @@ idx_det_init=max(idx_det_ref)+1; %next detection idx to process
 %%
 %Cycle the det by frames until finished
 while idx_det_init<=N_det, %N_det=length(x), idx_det_init is the index list of the detections that appear for the first time 
-    cpt_frame=cpt_frame+1; %On avance d'une frame
+    cpt_frame=cpt_frame+1;
     idx_det=find(frame==frame(idx_det_init)); %new set of idx associated to the new frame
     frame_cor(idx_det)=cpt_frame;             %Re-idxing the frame 
     
@@ -117,7 +117,7 @@ mol_flux=molec_flux(molec_On>=Nb_frame);
 mol_flux_small=molec_flux_small(molec_On>=Nb_frame);
 
 %% 
-% Calculation taux de rejection
+% Rejection rate calculation
 s = 0; % Number of localizations appearing on 3 frames at least
 for k = 1:length(mol_On);
     if mol_On(k) > 2; 
