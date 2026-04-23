@@ -1,0 +1,12 @@
+cff-version: 1.0.0
+title: "Brightness demixing SMLM code"
+authors:
+  - family-names: Fort
+    given-names: Emmanuel
+  - family-names: Le
+    given-names: Laurent
+  - family-names: Lévêque-Fort
+    given-names: Sandrine
+
+repository-code: "https://github.com/NanobioSMLM/brightness_demixing"
+license: GPL-3.0
